@@ -1,6 +1,7 @@
 function [ res ] = solve( M_create )
 M = M_create;
 [n,m] = size(M);
+
 res = zeros(m-1);
 v = zeros(11,m-1);
 indnzero = [];
