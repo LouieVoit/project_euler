@@ -1,8 +1,7 @@
 function I = indSearch(M)
-%% M is the matrice from the exemple, without modification.
-    [nrow,ncol] = size(M);
-    n=ncol-1;
-    M(:,ncol+1) = 1:nrow;
+%% M is the matrice from the exemple, without modification. It's last colum will be modified to fit the
+    [~,n] = size(M);
+    n=n-2;
     ind =[];
     I = indSearchRec(M,n,ind);
 end
