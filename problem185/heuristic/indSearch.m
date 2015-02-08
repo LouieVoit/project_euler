@@ -1,7 +1,7 @@
-function I = indSearch(M)
+function I = indSearch(M,n)
 %% M is the matrice from the exemple, without modification.
     [nrow,ncol] = size(M);
-    n=ncol-1;
+    %n=ncol-1;
     M(:,ncol+1) = 1:nrow;
     ind =[];
     I = indSearchRec(M,n,ind);

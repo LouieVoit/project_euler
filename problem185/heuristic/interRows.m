@@ -1,8 +1,8 @@
-function [ inter,nbInter ] = interRows( M,ind )
+function [ inter,nbInter ] = interRows( Mpos,Mzero,ind )
     nbInter = 0;
-    [~,m] = size(M);
+    [~,m] = size(Mpos);
     inter = -ones(1,m-1);
-    Maux = M(ind,1:(m-1));
+    Maux = Mpos(ind,1:(m-1));
     [n,m] = size(Maux);
     for j=1:m
       nRow = 1;
@@ -17,5 +17,14 @@ function [ inter,nbInter ] = interRows( M,ind )
           end
       end  
     end
+    % Mask Mzero
+    [n,m] = size(inter);
+    for j=1:m
+        for i=1:n
+            if (ismember(inter(i,j),Mzero(:,j)))
+                inter(i,j)=-1;
+            end
+        end
+    end       
 end
 
