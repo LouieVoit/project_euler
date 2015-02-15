@@ -1,5 +1,5 @@
-function [ sol ] = solve( Mp )
-    M = Mp;
+function [ sol ] = solve( Mproblem )
+    M = Mproblem;
     [~,m] = size(M);
     sizeSol = m-1;
     sol = zeros(1,sizeSol);
@@ -30,15 +30,29 @@ function [ sol ] = solve( Mp )
                     sol(indaux) = inter(indaux);
                 end
             end   
-             if (~isempty(indSFound))   
+             if (~isempty(indSFound))
+                %% Then we keep looking for the solution of the subproblem 
                 M = createSubProblem(M,indSFound,sol);
+                sizeSol = sizeSol - length(indSFound);
              else
                  loop = 0;
              end
         else
-            %% We didnt found ind such as sum(Ki) > n 
-            
+            %% We haven't found ind such as sum(Ki) > n 
+            % Let's hope that sum(Ki) == n, otherwise, we are fucked
+            indSCell = indSearch(Mpos,sizeSol-1);
+            %% Seek every possible solutions
+            possibleSol=[];
+            for indCell=indSCell
+                ind=indCell{:}
+                possibleSol = [possibleSol;unionRows(Mpos,Mzero,ind)]
+            end          
+            %% Remove impossible solution
+           
         end    
+        M
+        sol
+        pause
     end
 end
 
