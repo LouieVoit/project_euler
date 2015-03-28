@@ -2,9 +2,9 @@ function [ sol ] = solve( Mproblem )
     M = Mproblem;
     [~,m] = size(M);
     sizeSol = m-1;
-    sol = zeros(1,sizeSol);
+    sol = zeros(1,sizeSol)-1;
     loop = 1;
-    while loop
+    while loop>0
         % Zero extraction
         [n,m]=size(M);
         indZero = find(M(:,m)==0);
@@ -17,10 +17,10 @@ function [ sol ] = solve( Mproblem )
         end
         % Indice search in M such as sum(Ki) > n
         indSCell = indSearch(Mpos,sizeSol);
+        indSFound = [];
         if (~isempty(indSCell))
             %% We found ind such as sum(Ki) > n, we now have to find ind such as there is
             %  only one digit in the intersection
-            indSFound = [];
             for indCell=indSCell
                 ind=indCell{:};
                 [inter,nb] = interRows(Mpos,Mzero,ind);
@@ -34,22 +34,47 @@ function [ sol ] = solve( Mproblem )
                 % Then we keep looking for the solution of the subproblem 
                 M = createSubProblem(M,indSFound,sol);
                 sizeSol = sizeSol - length(indSFound);
-             else
+             elseif (isempty(find(sol==-1)))
                  loop = 0;
+             else
+                 loop = -1;
              end
         else
-            %% We haven't found ind such as sum(Ki) > n 
+            %% We haven't found ind such as sum(Ki) > n
             % Let's hope that there exists ind such as sum(Ki) == n,
             % otherwise, that's bad
             indSCell = indSearch(Mpos,sizeSol-1);
-            % Seek every possible solutions
-            possibleSol=[];
-            for indCell=indSCell
-                ind=indCell{:}
-                possibleSol = [possibleSol;unionRows(Mpos,Mzero,ind)]
-            end          
-            % Remove impossible solution
-           
+            % Let's eliminate digits with the zero rows
+            [n,m] = size(Mpos);
+            for i=1:n
+                for j=1:(m-1)
+                    if (ismember(Mpos(i,j),Mzero(:,j)))
+                        Mpos(i,j)=-1;
+                    end
+                end
+            end
+            % Let's hope a row contains only one digit
+            % Frak, it's a wild guess
+            wildGuess = 0;
+            [~,m] = size(Mpos);
+            for i=1:n
+                indAux = find(Mpos(i,1:(m-1))~=-1);
+                if (length(indAux)==1)
+                    % We found one!
+                    wildGuess = 1;
+                    indWildGuess = [i,indAux];
+                end
+            end
+            if wildGuess
+                indSFound = [indSFound,indWildGuess(2)];
+                sol(indWildGuess(2)) = Mpos(indWildGuess(1),indWildGuess(2));
+                M = createSubProblem(M,indSFound,sol);
+                if (isempty(find(sol==-1)))
+                 loop = 0;
+                end
+            else
+                loop = -2;
+            end
         end    
         M
         sol
