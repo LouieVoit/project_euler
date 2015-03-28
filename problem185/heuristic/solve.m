@@ -5,7 +5,7 @@ function [ sol ] = solve( Mproblem )
     sol = zeros(1,sizeSol);
     loop = 1;
     while loop
-        %% Zero extraction
+        % Zero extraction
         [n,m]=size(M);
         indZero = find(M(:,m)==0);
         Mzero = M(indZero,:);
@@ -15,7 +15,7 @@ function [ sol ] = solve( Mproblem )
                 Mpos = [Mpos;M(i,:)];
             end
         end
-        %% Indice search in M such as sum(Ki) > n
+        % Indice search in M such as sum(Ki) > n
         indSCell = indSearch(Mpos,sizeSol);
         if (~isempty(indSCell))
             %% We found ind such as sum(Ki) > n, we now have to find ind such as there is
@@ -31,7 +31,7 @@ function [ sol ] = solve( Mproblem )
                 end
             end   
              if (~isempty(indSFound))
-                %% Then we keep looking for the solution of the subproblem 
+                % Then we keep looking for the solution of the subproblem 
                 M = createSubProblem(M,indSFound,sol);
                 sizeSol = sizeSol - length(indSFound);
              else
@@ -39,15 +39,16 @@ function [ sol ] = solve( Mproblem )
              end
         else
             %% We haven't found ind such as sum(Ki) > n 
-            % Let's hope that sum(Ki) == n, otherwise, we are fucked
+            % Let's hope that there exists ind such as sum(Ki) == n,
+            % otherwise, that's bad
             indSCell = indSearch(Mpos,sizeSol-1);
-            %% Seek every possible solutions
+            % Seek every possible solutions
             possibleSol=[];
             for indCell=indSCell
                 ind=indCell{:}
                 possibleSol = [possibleSol;unionRows(Mpos,Mzero,ind)]
             end          
-            %% Remove impossible solution
+            % Remove impossible solution
            
         end    
         M

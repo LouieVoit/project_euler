@@ -1,5 +1,9 @@
 function I = indSearch(M,n)
 %% M is the matrice from the exemple, without modification.
+% Find indice such as sum(Ki) > n where Ki = M(i,ncol), number of exact number
+% in a row
+
+%% 
     [nrow,ncol] = size(M);
     %n=ncol-1;
     M(:,ncol+1) = 1:nrow;
