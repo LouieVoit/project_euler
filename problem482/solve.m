@@ -3,9 +3,10 @@ c = 1;
 res = 0;
 nbTriangle = 0;
 while (c<p/2)
+    c
     for a=1:c
-        for b=1:a
-            if (a+b>c && a+b+c<p)
+	   for b=1:a
+		 if (a+b>c && a+b+c<p)
                 [l,IA,IB,IC,r] = L(a,b,c);
                 if ((IA - floor(IA) == 0) && (IB - floor(IB) == 0) && (IC - floor(IC) == 0))
                     res = res + l;
