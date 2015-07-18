@@ -1,14 +1,10 @@
-package problem482;
-
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import sun.font.PhysicalFont;
 
 /**
  *
@@ -17,6 +13,7 @@ import sun.font.PhysicalFont;
 public class PythagoreanTriple implements Cloneable {
     
     protected int a_,b_,c_;
+    private static double EPS = 1E-5;
     
     public PythagoreanTriple(int a, int b, int c) {
         this.a_=Math.min(a, b);
@@ -95,44 +92,44 @@ public class PythagoreanTriple implements Cloneable {
     }
     
     public static void main(String[] argv) throws CloneNotSupportedException {
-        int maxPerimeter = (int) 1025;
+        double beginingTime = System.currentTimeMillis();
+        int maxPerimeter = (int) 1E7;
         Set<PythagoreanTriple> triples = PythagoreanTriple.generateTriples(maxPerimeter/2);
         //
-        System.out.println(triples.size()+"\n###########");
+        double totalSizeSet = triples.size();
+        System.out.println("Number of pythagorean triples : "+(int)totalSizeSet);
+        System.out.println("###########");
+        System.out.println("Start of the run !");
+        int percentChecked = 0;
+        int checkedTriple = 0;
         int sum = 0;
-        int nbTriangle = 0;
+        int nbTriangleFound = 0;
         Iterator iteratorMainSet = triples.iterator();
         while (iteratorMainSet.hasNext()) {
             PythagoreanTriple triple = (PythagoreanTriple) iteratorMainSet.next();
             for (int i=0;i<2;i++) {
                 final int r = (i==0?triple.a_:triple.b_);
-                if (r%2 == 0) {
+                if (true) {
                     int y = (i==0?triple.b_:triple.a_);
                     int IB = triple.c_;
                     List<PythagoreanTriple> triplesWithSameLengthSide = triples.stream().filter(t -> (t.a_==r || t.b_==r)).collect(Collectors.toList());
                     Iterator iteratorSetWithSameSide = triplesWithSameLengthSide.iterator();
                     while (iteratorSetWithSameSide.hasNext()) {
                         PythagoreanTriple tripleWithSameLengthSide = (PythagoreanTriple) iteratorSetWithSameSide.next();
-                        int x;
+                        int x = (tripleWithSameLengthSide.a_ == r)?tripleWithSameLengthSide.b_:tripleWithSameLengthSide.a_;
                         int IC = tripleWithSameLengthSide.c_;
-                        if (tripleWithSameLengthSide.a_ == r) {
-                            x = tripleWithSameLengthSide.b_;
-                        } else {
-                            x = tripleWithSameLengthSide.a_;
-                        }
                         double alpha = 2*Math.asin(((double)r)/((double)IC));
                         double beta = 2*Math.asin(((double)r)/((double)IB));
                         if ((alpha+beta)<Math.PI) {
-                            double lastSide = (x+y)*Math.sin(alpha)/Math.sin(Math.PI-alpha-beta) - y;     
-                            if (Math.abs(Math.floor(lastSide)-lastSide)<1E-5 || Math.abs(Math.floor(lastSide)+1-lastSide)<1E-5) {
+                            double lastSide = (x+y)*Math.sin(beta)/Math.sin(Math.PI-alpha-beta) - x;     
+                            if (Math.abs(Math.floor(lastSide)-lastSide)<PythagoreanTriple.EPS || Math.abs(Math.floor(lastSide)+1-lastSide)<PythagoreanTriple.EPS) {
                                 final int z = (int) Math.rint(lastSide);
                                 if ((x+y+z)*2<maxPerimeter) {
                                     for (PythagoreanTriple aux : triplesWithSameLengthSide.stream().filter(t -> (t.a_==z || t.b_==z)).collect(Collectors.toList())) {
-                                            System.out.println("One triangle has been found !");
-                                            System.out.println(triple.toString()+" "+tripleWithSameLengthSide.toString()+" "+aux.toString());
-                                            System.out.println("Perimeter : "+(x+y+z)*2);
+//                                            System.out.println("One triangle has been found !");
+//                                            System.out.println(triple.toString()+" "+tripleWithSameLengthSide.toString()+" "+aux.toString());
                                             sum += (x+y+z)*2 + IB + IC + aux.c_;
-                                            nbTriangle++;
+                                            nbTriangleFound++;
                                     }
                                 }
                             }
@@ -142,8 +139,18 @@ public class PythagoreanTriple implements Cloneable {
                 }
             }
             iteratorMainSet.remove();
+            // Print ...
+            checkedTriple++;
+            int percent = (int) Math.floor(100*checkedTriple/totalSizeSet);
+            if (percent > percentChecked) {
+                percentChecked = percent;
+                System.out.println("Progress ... "+percentChecked+"%");
+            }            
         }
-        System.out.println(sum);
-        System.out.println(nbTriangle);
+        System.out.println("###########");
+        System.out.println("End of run!");
+        System.out.println("Time of run : "+(System.currentTimeMillis()-beginingTime)/1000+" s");
+        System.out.println("S("+maxPerimeter+") = "+sum);
+        System.out.println("Number of triangle = "+nbTriangleFound);
     }
 }
