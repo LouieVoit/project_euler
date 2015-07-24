@@ -1,3 +1,6 @@
+package problem482;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -13,7 +16,7 @@ import java.util.stream.Collectors;
 public class PythagoreanTriple implements Cloneable {
     
     protected int a_,b_,c_;
-    private static double EPS = 1E-5;
+    private static final double EPS = 1E-5;
     
     public PythagoreanTriple(int a, int b, int c) {
         this.a_=Math.min(a, b);
@@ -41,17 +44,7 @@ public class PythagoreanTriple implements Cloneable {
         return (PythagoreanTriple) super.clone();
     }
     
-    public static Set<PythagoreanTriple> generateTriples(double maxHypSize) throws CloneNotSupportedException {
-        Comparator<PythagoreanTriple> comp = new Comparator<PythagoreanTriple>() {
-            @Override
-            public int compare(PythagoreanTriple t, PythagoreanTriple p) {
-                int returnValue = (t.c_-p.c_);
-                if (returnValue==0 && (t.b_!=p.b_ || t.a_!=p.a_)) {
-                    returnValue=1;
-                }
-                return returnValue;
-            }
-        };
+    public static Set<PythagoreanTriple> generateTriples(double maxHypSize,Comparator comp) throws CloneNotSupportedException {
         Set<PythagoreanTriple> primeTriples = new TreeSet<>(comp);
         int m = 2;
         int n = 1;
@@ -91,10 +84,40 @@ public class PythagoreanTriple implements Cloneable {
         return (gcd==1);
     }
     
+    
+    @SuppressWarnings("Convert2Lambda")
     public static void main(String[] argv) throws CloneNotSupportedException {
         double beginingTime = System.currentTimeMillis();
         int maxPerimeter = (int) 1E7;
-        Set<PythagoreanTriple> triples = PythagoreanTriple.generateTriples(maxPerimeter/2);
+        Comparator<PythagoreanTriple> comp = new Comparator<PythagoreanTriple>() {
+            @Override
+            public int compare(PythagoreanTriple t, PythagoreanTriple p) {
+                int returnValue = (t.a_-p.a_);
+                if (returnValue==1) {
+                    returnValue++;
+                }
+                if (returnValue==0 && (t.b_!=p.b_ || t.a_!=p.a_ || t.c_!=p.c_)) {
+                    returnValue=1;
+                }
+                return returnValue;
+            }
+        };
+        Set<PythagoreanTriple> triples = PythagoreanTriple.generateTriples(maxPerimeter/2,comp);
+        //
+        comp = new Comparator<PythagoreanTriple>() {
+            @Override
+            public int compare(PythagoreanTriple t, PythagoreanTriple p) {
+                int returnValue = (t.b_-p.b_);
+                if (returnValue==1) {
+                    returnValue++;
+                }
+                if (returnValue==0 && (t.b_!=p.b_ || t.a_!=p.a_ || t.c_!=p.c_)) {
+                    returnValue=1;
+                }
+                return returnValue;
+            }
+        };
+        Set<PythagoreanTriple> triplesAux = PythagoreanTriple.generateTriples(maxPerimeter/2,comp);
         //
         double totalSizeSet = triples.size();
         System.out.println("Number of pythagorean triples : "+(int)totalSizeSet);
@@ -102,45 +125,72 @@ public class PythagoreanTriple implements Cloneable {
         System.out.println("Start of the run !");
         int percentChecked = 0;
         int checkedTriple = 0;
-        int sum = 0;
+        long sum = 0;
         int nbTriangleFound = 0;
         Iterator iteratorMainSet = triples.iterator();
+        PythagoreanTriple newTriple = (PythagoreanTriple) iteratorMainSet.next();
         while (iteratorMainSet.hasNext()) {
-            PythagoreanTriple triple = (PythagoreanTriple) iteratorMainSet.next();
-            for (int i=0;i<2;i++) {
-                final int r = (i==0?triple.a_:triple.b_);
-                if (true) {
-                    int y = (i==0?triple.b_:triple.a_);
-                    int IB = triple.c_;
-                    List<PythagoreanTriple> triplesWithSameLengthSide = triples.stream().filter(t -> (t.a_==r || t.b_==r)).collect(Collectors.toList());
-                    Iterator iteratorSetWithSameSide = triplesWithSameLengthSide.iterator();
-                    while (iteratorSetWithSameSide.hasNext()) {
-                        PythagoreanTriple tripleWithSameLengthSide = (PythagoreanTriple) iteratorSetWithSameSide.next();
-                        int x = (tripleWithSameLengthSide.a_ == r)?tripleWithSameLengthSide.b_:tripleWithSameLengthSide.a_;
-                        int IC = tripleWithSameLengthSide.c_;
-                        double alpha = 2*Math.asin(((double)r)/((double)IC));
-                        double beta = 2*Math.asin(((double)r)/((double)IB));
-                        if ((alpha+beta)<Math.PI) {
-                            double lastSide = (x+y)*Math.sin(beta)/Math.sin(Math.PI-alpha-beta) - x;     
-                            if (Math.abs(Math.floor(lastSide)-lastSide)<PythagoreanTriple.EPS || Math.abs(Math.floor(lastSide)+1-lastSide)<PythagoreanTriple.EPS) {
-                                final int z = (int) Math.rint(lastSide);
-                                if ((x+y+z)*2<maxPerimeter) {
-                                    for (PythagoreanTriple aux : triplesWithSameLengthSide.stream().filter(t -> (t.a_==z || t.b_==z)).collect(Collectors.toList())) {
-//                                            System.out.println("One triangle has been found !");
-//                                            System.out.println(triple.toString()+" "+tripleWithSameLengthSide.toString()+" "+aux.toString());
-                                            sum += (x+y+z)*2 + IB + IC + aux.c_;
-                                            nbTriangleFound++;
-                                    }
+            //
+            PythagoreanTriple triple = newTriple;
+            int r = triple.a_;
+            List<PythagoreanTriple> triplesWithSameRadius = new ArrayList<>();
+            iteratorMainSet.remove();
+            checkedTriple++;
+            triplesWithSameRadius.add(triple);
+            boolean loop = iteratorMainSet.hasNext();
+            while (loop) {
+                PythagoreanTriple tripleAux = (PythagoreanTriple) iteratorMainSet.next();
+                loop = iteratorMainSet.hasNext() && tripleAux.a_==r;
+                if (tripleAux.a_==r) {
+                    triplesWithSameRadius.add(tripleAux);
+                    iteratorMainSet.remove();
+                    checkedTriple++;
+                } else {
+                    newTriple = tripleAux;
+                }
+            }
+            //
+            Iterator iteratorAuxSet = triplesAux.iterator();
+            loop = iteratorAuxSet.hasNext();
+            while (loop) {
+                PythagoreanTriple tripleAux = (PythagoreanTriple) iteratorAuxSet.next();
+                loop = iteratorAuxSet.hasNext() && (tripleAux.b_<=r);
+                if (tripleAux.b_<=r) {
+                    iteratorAuxSet.remove();
+                    if (tripleAux.b_==r) {
+                        triplesWithSameRadius.add(tripleAux);
+                    } 
+                }
+            }
+            //
+            for (int i=0;i<triplesWithSameRadius.size();i++) {
+                PythagoreanTriple mainTriple = triplesWithSameRadius.get(i);
+                int y = (mainTriple.a_ == r)?mainTriple.b_:mainTriple.a_;
+                int IB = mainTriple.c_;
+                for (int j=i;j<triplesWithSameRadius.size();j++) {
+                    PythagoreanTriple secondTriple = triplesWithSameRadius.get(j);
+                    int x = (secondTriple.a_ == r)?secondTriple.b_:secondTriple.a_;
+                    int IC = secondTriple.c_;
+                    double alpha = 2*Math.asin(((double)r)/((double)IC));
+                    double beta = 2*Math.asin(((double)r)/((double)IB));
+                    if ((alpha+beta)<Math.PI) {
+                        double lastSide = (x+y)*Math.sin(beta)/Math.sin(Math.PI-alpha-beta) - x;     
+                        if (Math.abs(Math.floor(lastSide)-lastSide)<PythagoreanTriple.EPS || Math.abs(Math.floor(lastSide)+1-lastSide)<PythagoreanTriple.EPS) {
+                            final int z = (int) Math.rint(lastSide);
+                            if ((x+y+z)*2<maxPerimeter) {
+                                List<PythagoreanTriple> tripleWithWantedZ = triplesWithSameRadius.subList(j, triplesWithSameRadius.size()).stream().filter(t -> (t.a_==z || t.b_==z)).collect(Collectors.toList());
+                                for (PythagoreanTriple aux : tripleWithWantedZ) {
+    //                                    System.out.println("One triangle has been found !");
+//                                        System.out.println(mainTriple.toString()+" "+secondTriple.toString()+" "+aux.toString());
+                                        sum += (long) (x+y+z)*2 + IB + IC + aux.c_;
+                                        nbTriangleFound++;
                                 }
                             }
                         }
-                        iteratorSetWithSameSide.remove();
                     }
                 }
             }
-            iteratorMainSet.remove();
-            // Print ...
-            checkedTriple++;
+//          Print progress...
             int percent = (int) Math.floor(100*checkedTriple/totalSizeSet);
             if (percent > percentChecked) {
                 percentChecked = percent;
