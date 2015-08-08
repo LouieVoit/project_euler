@@ -1,5 +1,3 @@
-package problem482;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -44,7 +42,7 @@ public class PythagoreanTriple implements Cloneable {
         return (PythagoreanTriple) super.clone();
     }
     
-    public static Set<PythagoreanTriple> generateTriples(double maxHypSize,Comparator comp) throws CloneNotSupportedException {
+    public static Set<PythagoreanTriple> generateTriples(double maxHypSize,Comparator<PythagoreanTriple> comp) throws CloneNotSupportedException {
         Set<PythagoreanTriple> primeTriples = new TreeSet<>(comp);
         int m = 2;
         int n = 1;
@@ -88,7 +86,10 @@ public class PythagoreanTriple implements Cloneable {
     @SuppressWarnings("Convert2Lambda")
     public static void main(String[] argv) throws CloneNotSupportedException {
         double beginingTime = System.currentTimeMillis();
-        int maxPerimeter = (int) 1E7;
+	if (argv.length!=1) {
+		throw new RuntimeException("There must be only one argument bro : the maximal perimeter");
+	}
+        int maxPerimeter = (int) Double.parseDouble(argv[0]);
         Comparator<PythagoreanTriple> comp = new Comparator<PythagoreanTriple>() {
             @Override
             public int compare(PythagoreanTriple t, PythagoreanTriple p) {
